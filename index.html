@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>บทเรียนออนไลน์ วิชาเครื่องวัดไฟฟ้า - วท.เวียงป่าเป้า</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Prompt', sans-serif; background-color: #f3f4f6; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Navbar -->
+    <nav class="bg-blue-900 text-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div>
+                <h1 class="text-lg font-bold">⚡ วิชาเครื่องวัดไฟฟ้า (หลักสูตรระยะสั้น ม.4-6)</h1>
+                <p class="text-xs text-blue-200">โดย ครูศตวรรษ แก้วก่า แผนกวิชาช่างไฟฟ้า วิทยาลัยเทคนิคเวียงป่าเป้า</p>
+            </div>
+            <div id="nav-user-info" class="hidden flex items-center space-x-3">
+                <img id="nav-avatar" src="https://via.placeholder.com/40" class="w-9 h-9 rounded-full border-2 border-yellow-400 object-cover">
+                <span id="nav-name" class="text-sm font-medium hidden sm:inline"></span>
+                <button onclick="showSection('profile-section')" class="bg-blue-700 hover:bg-blue-600 px-3 py-1 rounded text-xs">บัญชีของฉัน</button>
+                <button id="btn-admin-nav" onclick="showSection('admin-section')" class="hidden bg-yellow-500 text-blue-950 font-bold px-3 py-1 rounded text-xs">ระบบครู (Admin)</button>
+                <button onclick="logout()" class="bg-red-600 hover:bg-red-500 px-3 py-1 rounded text-xs">ออก</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-5xl mx-auto p-4 mt-6">
+
+        <!-- 1. หน้าเข้าสู่ระบบ / สมัครสมาชิก -->
+        <div id="auth-section" class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-md">
+            <h2 class="text-2xl font-bold text-center text-blue-900 mb-2">เข้าสู่ระบบบทเรียน</h2>
+            <p class="text-center text-sm text-gray-500 mb-6">วิทยาลัยเทคนิคเวียงป่าเป้า</p>
+            
+            <button onclick="loginWithGoogle()" class="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2.5 px-4 rounded-lg shadow-sm mb-4 transition">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5">
+                เข้าสู่ระบบด้วยบัญชี Google
+            </button>
+
+            <div class="relative flex py-2 items-center mb-4">
+                <div class="flex-grow border-t border-gray-300"></div>
+                <span class="flex-shrink mx-4 text-gray-400 text-xs">หรือใช้อีเมล</span>
+                <div class="flex-grow border-t border-gray-300"></div>
+            </div>
+
+            <input type="email" id="email" placeholder="อีเมล" class="w-full mb-3 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="password" id="password" placeholder="รหัสผ่าน (6 ตัวขึ้นไป)" class="w-full mb-4 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            
+            <div class="flex gap-2">
+                <button onclick="loginEmail()" class="w-1/2 bg-blue-800 hover:bg-blue-700 text-white py-2 rounded-lg font-medium">เข้าสู่ระบบ</button>
+                <button onclick="registerEmail()" class="w-1/2 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg font-medium">สมัครสมาชิก</button>
+            </div>
+        </div>
+
+        <!-- 2. หน้าลงทะเบียนครั้งแรก -->
+        <div id="onboarding-section" class="hidden max-w-md mx-auto bg-white p-8 rounded-xl shadow-md">
+            <h2 class="text-xl font-bold text-blue-900 mb-2">👋 ยินดีต้อนรับเข้าสู่บทเรียน</h2>
+            <p class="text-sm text-gray-600 mb-4">กรุณากรอกข้อมูลส่วนตัวให้ถูกต้องเพื่อบันทึกคะแนนและระดับทักษะ</p>
+            
+            <label class="block text-sm font-medium mb-1">ชื่อจริง (ไม่ต้องมีคำนำหน้า)</label>
+            <input type="text" id="ob-fname" class="w-full mb-3 px-3 py-2 border rounded-lg">
+            
+            <label class="block text-sm font-medium mb-1">นามสกุล</label>
+            <input type="text" id="ob-lname" class="w-full mb-3 px-3 py-2 border rounded-lg">
+            
+            <label class="block text-sm font-medium mb-1">ระดับชั้นที่กำลังศึกษา</label>
+            <select id="ob-grade" class="w-full mb-6 px-3 py-2 border rounded-lg bg-white">
+                <option value="ม.4">มัธยมศึกษาปีที่ 4 (ม.4)</option>
+                <option value="ม.5">มัธยมศึกษาปีที่ 5 (ม.5)</option>
+                <option value="ม.6">มัธยมศึกษาปีที่ 6 (ม.6)</option>
+            </select>
+
+            <button onclick="confirmOnboarding()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-lg">บันทึกและเข้าสู่บทเรียน</button>
+        </div>
+
+        <!-- 3. หน้าหลักบทเรียนและแบบทดสอบ -->
+        <div id="dashboard-section" class="hidden">
+            <div class="bg-white p-6 rounded-xl shadow-sm mb-6 flex flex-wrap justify-between items-center border-l-4 border-blue-800">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800">สวัสดี, <span id="dash-fullname" class="text-blue-800"></span></h2>
+                    <p class="text-sm text-gray-500 mt-1">
+                        ระดับชั้น: <span id="dash-grade" class="font-semibold text-gray-700"></span> | 
+                        ระดับทักษะ (Elo Rating): <span id="dash-elo" class="font-bold text-purple-600 text-base">50</span> / 100 |
+                        ตอบถูกสะสม: <span id="dash-correct" class="font-bold text-green-600">0</span> ข้อ
+                    </p>
+                </div>
+                <div class="flex gap-2 mt-3 sm:mt-0">
+                    <button onclick="switchTab('lessons')" id="tab-lessons" class="bg-blue-800 text-white px-4 py-2 rounded-lg text-sm font-medium">📚 คลังความรู้</button>
+                    <button onclick="switchTab('quizzes')" id="tab-quizzes" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">🎯 ฝึกทำแบบทดสอบ (Adaptive)</button>
+                </div>
+            </div>
+
+            <!-- เนื้อหาบทเรียน -->
+            <div id="content-lessons" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <p class="text-gray-500">กำลังโหลดข้อมูลจาก Google Sheets...</p>
+            </div>
+
+            <!-- แบบทดสอบ Adaptive Elo -->
+            <div id="content-quizzes" class="hidden bg-white p-6 rounded-xl shadow-sm max-w-2xl mx-auto">
+                <div class="flex justify-between items-center border-b pb-3 mb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-blue-900">แบบฝึกทักษะปรับระดับอัตโนมัติ</h3>
+                        <p class="text-xs text-gray-500">ระบบจะเลือกข้อสอบที่เหมาะสมกับระดับฝีมือของคุณในขณะนั้น</p>
+                    </div>
+                    <span id="q-difficulty-badge" class="bg-purple-100 text-purple-800 text-xs font-bold px-3 py-1 rounded-full">ความยาก: -</span>
+                </div>
+
+                <!-- กล่องแสดงโจทย์ทีละข้อ -->
+                <div id="adaptive-quiz-box">
+                    <p id="q-text" class="text-base font-semibold text-gray-800 mb-4">กำลังเตรียมโจทย์...</p>
+                    <div id="q-choices" class="space-y-2.5"></div>
+                </div>
+
+                <!-- กล่องแสดงผลเฉลยหลังตอบ -->
+                <div id="q-feedback" class="hidden mt-4 p-4 rounded-lg text-sm font-medium"></div>
+
+                <div class="mt-6 flex justify-end">
+                    <button id="btn-next-q" onclick="loadNextAdaptiveQuestion()" class="hidden bg-blue-800 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-lg">ข้อถัดไป ➔</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. หน้าปรับแต่งบัญชี -->
+        <div id="profile-section" class="hidden max-w-md mx-auto bg-white p-8 rounded-xl shadow-md">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-blue-900">⚙️ ปรับแต่งข้อมูลบัญชี</h2>
+                <button onclick="showSection('dashboard-section')" class="text-sm text-blue-600 hover:underline">← กลับหน้าเรียน</button>
+            </div>
+            
+            <div class="flex flex-col items-center mb-4">
+                <img id="prof-preview" src="" class="w-24 h-24 rounded-full object-cover border-4 border-blue-100 mb-2">
+                <label class="text-xs text-gray-500 mb-1">ลิงก์รูปโปรไฟล์ (URL รูปภาพ)</label>
+                <input type="text" id="prof-avatar" placeholder="วางลิงก์รูปภาพ https://..." class="w-full px-3 py-1.5 text-sm border rounded-lg">
+            </div>
+
+            <label class="block text-sm font-medium mb-1">ชื่อจริง</label>
+            <input type="text" id="prof-fname" class="w-full mb-3 px-3 py-2 border rounded-lg">
+            
+            <label class="block text-sm font-medium mb-1">นามสกุล</label>
+            <input type="text" id="prof-lname" class="w-full mb-3 px-3 py-2 border rounded-lg">
+            
+            <label class="block text-sm font-medium mb-1">ระดับชั้น</label>
+            <select id="prof-grade" class="w-full mb-6 px-3 py-2 border rounded-lg bg-white">
+                <option value="ม.4">มัธยมศึกษาปีที่ 4 (ม.4)</option>
+                <option value="ม.5">มัธยมศึกษาปีที่ 5 (ม.5)</option>
+                <option value="ม.6">มัธยมศึกษาปีที่ 6 (ม.6)</option>
+            </select>
+
+            <button onclick="updateProfile()" class="w-full bg-blue-800 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg">บันทึกการเปลี่ยนแปลง</button>
+        </div>
+
+        <!-- 5. หน้า Admin สำหรับครูศตวรรษ -->
+        <div id="admin-section" class="hidden bg-white p-6 rounded-xl shadow-md">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-xl font-bold text-blue-900">👨‍🏫 ระบบติดตามผลการเรียน (สำหรับครูผู้สอน)</h2>
+                    <p class="text-xs text-gray-500">แสดงระดับความสามารถ (Elo Rating) และสถิติการฝึกฝนของนักเรียน</p>
+                </div>
+                <button onclick="showSection('dashboard-section')" class="bg-gray-200 px-4 py-2 rounded-lg text-sm">กลับหน้าหลัก</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-blue-900 text-white text-sm">
+                            <th class="p-3 rounded-tl-lg">ชื่อ - นามสกุล</th>
+                            <th class="p-3">ระดับชั้น</th>
+                            <th class="p-3">ระดับทักษะ (Elo)</th>
+                            <th class="p-3">ตอบถูก / ทำทั้งหมด</th>
+                            <th class="p-3 rounded-tr-lg">อีเมล</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-student-list" class="text-sm divide-y"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Firebase SDK & App Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // ==========================================
+        // 1. ตั้งค่า FIREBASE และ GOOGLE SHEET ของคุณครูตรงนี้
+        // ==========================================
+        const firebaseConfig = {
+  		apiKey: "AIzaSyCb3vuYfu6rPVMbMK6tn01pd06H4BzeFzE",
+  		authDomain: "wiangpapao-meter.firebaseapp.com",
+  		projectId: "wiangpapao-meter",
+  		storageBucket: "wiangpapao-meter.firebasestorage.app",
+  		messagingSenderId: "1051222275612",
+  		appId: "1:1051222275612:web:338b828116f3203a7791d9",
+  		measurementId: "G-R3NCQ10SJH"
+        };
+
+        const SHEET_ID = "1MBeCFZ0voalevZMQHaNoA34Fr1zUijUgWwiJOuNEzFI";
+        const TEACHER_EMAIL = "e25sag@icloud.com;
+        // ==========================================
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        let currentUser = null;
+        let userData = null;
+        let allQuizzes = [];
+        let answeredIds = new Set();
+        let activeQuestion = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                const docRef = doc(db, "students", user.uid);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    userData = docSnap.data();
+                    // กรณีบัญชีเก่าที่ยังไม่มีค่า elo ให้ตั้งค่าเริ่มต้น 50
+                    if (userData.elo === undefined) userData.elo = 50;
+                    if (userData.correctCount === undefined) userData.correctCount = 0;
+                    if (userData.totalAnswered === undefined) userData.totalAnswered = 0;
+                    setupDashboard();
+                } else {
+                    showSection('onboarding-section');
+                }
+            } else {
+                currentUser = null;
+                document.getElementById('nav-user-info').classList.add('hidden');
+                showSection('auth-section');
+            }
+        });
+
+        window.loginWithGoogle = () => signInWithPopup(auth, provider).catch(e => alert(e.message));
+        window.loginEmail = () => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            signInWithEmailAndPassword(auth, email, pass).catch(e => alert("เข้าสู่ระบบไม่สำเร็จ: " + e.message));
+        };
+        window.registerEmail = () => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            createUserWithEmailAndPassword(auth, email, pass).catch(e => alert("สมัครสมาชิกไม่สำเร็จ: " + e.message));
+        };
+        window.logout = () => signOut(auth);
+
+        window.confirmOnboarding = async () => {
+            const fname = document.getElementById('ob-fname').value.trim();
+            const lname = document.getElementById('ob-lname').value.trim();
+            const grade = document.getElementById('ob-grade').value;
+
+            if (!fname || !lname) return alert("กรุณากรอกชื่อและนามสกุลให้ครบถ้วน");
+
+            const isConfirmed = confirm(`กรุณาตรวจสอบข้อมูลอีกครั้ง:\nชื่อ-นามสกุล: ${fname} ${lname}\nระดับชั้น: ${grade}\n\nข้อมูลถูกต้องหรือไม่?`);
+            if (!isConfirmed) return;
+
+            userData = {
+                uid: currentUser.uid,
+                email: currentUser.email,
+                fname: fname,
+                lname: lname,
+                grade: grade,
+                avatar: currentUser.photoURL || "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+                elo: 50, // ค่าพลังเริ่มต้น 50 (เต็ม 100)
+                correctCount: 0,
+                totalAnswered: 0
+            };
+
+            await setDoc(doc(db, "students", currentUser.uid), userData);
+            setupDashboard();
+        };
+
+        function setupDashboard() {
+            document.getElementById('nav-user-info').classList.remove('hidden');
+            document.getElementById('nav-name').innerText = `${userData.fname} (${userData.grade})`;
+            document.getElementById('nav-avatar').src = userData.avatar;
+
+            document.getElementById('dash-fullname').innerText = `${userData.fname} ${userData.lname}`;
+            document.getElementById('dash-grade').innerText = userData.grade;
+            document.getElementById('dash-elo').innerText = Math.round(userData.elo);
+            document.getElementById('dash-correct').innerText = userData.correctCount;
+
+            document.getElementById('prof-fname').value = userData.fname;
+            document.getElementById('prof-lname').value = userData.lname;
+            document.getElementById('prof-grade').value = userData.grade;
+            document.getElementById('prof-avatar').value = userData.avatar;
+            document.getElementById('prof-preview').src = userData.avatar;
+
+            if (currentUser.email === TEACHER_EMAIL) {
+                document.getElementById('btn-admin-nav').classList.remove('hidden');
+                loadAdminData();
+            }
+
+            showSection('dashboard-section');
+            loadSheetData();
+        }
+
+        window.updateProfile = async () => {
+            const fname = document.getElementById('prof-fname').value.trim();
+            const lname = document.getElementById('prof-lname').value.trim();
+            const grade = document.getElementById('prof-grade').value;
+            const avatar = document.getElementById('prof-avatar').value.trim();
+
+            if (!fname || !lname) return alert("ชื่อและนามสกุลห้ามว่าง");
+
+            userData.fname = fname;
+            userData.lname = lname;
+            userData.grade = grade;
+            userData.avatar = avatar || userData.avatar;
+
+            await updateDoc(doc(db, "students", currentUser.uid), {
+                fname: userData.fname,
+                lname: userData.lname,
+                grade: userData.grade,
+                avatar: userData.avatar
+            });
+
+            alert("บันทึกข้อมูลสำเร็จ!");
+            setupDashboard();
+        };
+
+        // โหลดข้อมูลจาก Google Sheets
+        async function loadSheetData() {
+            try {
+                // 1. แท็บ Lessons
+                const resLessons = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Lessons`);
+                const textLessons = await resLessons.text();
+                const jsonLessons = JSON.parse(textLessons.substr(47).slice(0, -2));
+                
+                const lessonContainer = document.getElementById('content-lessons');
+                lessonContainer.innerHTML = "";
+
+                jsonLessons.table.rows.forEach(row => {
+                    const title = row.c[1]?.v || "";
+                    const grade = row.c[2]?.v || "ทั้งหมด";
+                    const content = row.c[3]?.v || "";
+                    const video = row.c[4]?.v || "";
+
+                    if (grade === "ทั้งหมด" || grade === userData.grade) {
+                        lessonContainer.innerHTML += `
+                            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-medium">${grade}</span>
+                                <h3 class="text-lg font-bold text-gray-800 mt-2 mb-2">${title}</h3>
+                                <p class="text-sm text-gray-600 whitespace-pre-line mb-3">${content}</p>
+                                ${video ? `<a href="${video}" target="_blank" class="inline-block text-xs bg-red-600 text-white px-3 py-1.5 rounded hover:bg-red-700">▶ ดูวิดีโอประกอบการสอน</a>` : ''}
+                            </div>
+                        `;
+                    }
+                });
+
+                // 2. แท็บ Quizzes (โครงสร้างใหม่: D=คำตอบถูกเสมอ, H=ความยาก 1-100)
+                const resQuizzes = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Quizzes`);
+                const textQuizzes = await resQuizzes.text();
+                const jsonQuizzes = JSON.parse(textQuizzes.substr(47).slice(0, -2));
+
+                allQuizzes = [];
+                jsonQuizzes.table.rows.forEach((row, index) => {
+                    const qId = row.c[0]?.v || `Q_${index}`;
+                    const grade = row.c[1]?.v || "";
+                    if (grade === userData.grade || grade === "ทั้งหมด") {
+                        const diff = parseInt(row.c[7]?.v) || 50; // ค่าความยาก 1-100
+                        allQuizzes.push({
+                            id: qId,
+                            question: row.c[2]?.v || "",
+                            correctText: row.c[3]?.v || "", // คอลัมน์ D ถูกเสมอ
+                            distractors: [
+                                row.c[4]?.v || "",
+                                row.c[5]?.v || "",
+                                row.c[6]?.v || ""
+                            ].filter(t => t !== ""),
+                            difficulty: Math.max(1, Math.min(100, diff))
+                        });
+                    }
+                });
+
+                loadNextAdaptiveQuestion();
+            } catch (err) {
+                console.error(err);
+                document.getElementById('content-lessons').innerHTML = "<p class='text-red-500'>ไม่สามารถโหลดข้อมูลจาก Google Sheet ได้ กรุณาตรวจสอบ Sheet ID หรือการตั้งค่าเผยแพร่ไปยังเว็บ</p>";
+            }
+        }
+
+        // สุ่มสลับตำแหน่งอาเรย์ (Fisher-Yates Shuffle)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // เลือกโจทย์ที่ความยากใกล้เคียงกับ Elo ของนักเรียนมากที่สุด
+        window.loadNextAdaptiveQuestion = () => {
+            document.getElementById('q-feedback').classList.add('hidden');
+            document.getElementById('btn-next-q').classList.add('hidden');
+
+            if (allQuizzes.length === 0) {
+                document.getElementById('q-text').innerText = "ยังไม่มีคลังข้อสอบสำหรับระดับชั้นนี้";
+                document.getElementById('q-choices').innerHTML = "";
+                return;
+            }
+
+            // กรองข้อที่ยังไม่เคยทำในรอบนี้ (ถ้าทำครบทุกข้อแล้วให้รีเซ็ตเริ่มวนใหม่)
+            let available = allQuizzes.filter(q => !answeredIds.has(q.id));
+            if (available.length === 0) {
+                answeredIds.clear();
+                available = [...allQuizzes];
+            }
+
+            // เรียงลำดับตามระยะห่างของความยากกับ Elo ปัจจุบันของนักเรียน (น้อยสุดขึ้นก่อน)
+            available.sort((a, b) => Math.abs(a.difficulty - userData.elo) - Math.abs(b.difficulty - userData.elo));
+
+            // สุ่มหยิบจาก 2 ข้อที่ใกล้เคียงที่สุด เพื่อไม่ให้จำเจเกินไป
+            const topCandidates = available.slice(0, Math.min(2, available.length));
+            activeQuestion = topCandidates[Math.floor(Math.random() * topCandidates.length)];
+            answeredIds.add(activeQuestion.id);
+
+            // แสดงผลโจทย์และป้ายความยาก
+            document.getElementById('q-difficulty-badge').innerText = `ระดับความยากโจทย์: ${activeQuestion.difficulty} / 100`;
+            document.getElementById('q-text').innerText = activeQuestion.question;
+
+            // รวมคำตอบที่ถูก + ตัวลวง แล้วสุ่มตำแหน่งใหม่ทั้งหมด
+            let choices = [
+                { text: activeQuestion.correctText, isCorrect: true },
+                ...activeQuestion.distractors.map(d => ({ text: d, isCorrect: false }))
+            ];
+            choices = shuffleArray(choices);
+
+            const thaiLabels = ['ก', 'ข', 'ค', 'ง'];
+            const choicesDiv = document.getElementById('q-choices');
+            choicesDiv.innerHTML = "";
+
+            choices.forEach((choice, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "choice-btn w-full text-left p-3.5 border rounded-lg hover:bg-blue-50 hover:border-blue-400 transition flex items-center gap-3 bg-white";
+                btn.innerHTML = `<span class="w-7 h-7 rounded-full bg-gray-100 text-gray-700 font-bold flex items-center justify-center text-sm">${thaiLabels[idx]}</span> <span>${choice.text}</span>`;
+                btn.onclick = () => handleAnswer(choice.isCorrect, btn);
+                choicesDiv.appendChild(btn);
+            });
+        };
+
+        // ตรวจคำตอบและคำนวณ Elo Rating ใหม่
+        async function handleAnswer(isCorrect, clickedBtn) {
+            // ล็อกปุ่มทั้งหมดไม่ให้กดซ้ำ
+            const allBtns = document.querySelectorAll('.choice-btn');
+            allBtns.forEach(b => b.disabled = true);
+
+            const oldElo = userData.elo;
+            const qDiff = activeQuestion.difficulty;
+
+            // สูตร Elo Rating ปรับสเกลสำหรับ 1 - 100 (K-Factor = 12)
+            const K = 12;
+            const expectedScore = 1 / (1 + Math.pow(10, (qDiff - oldElo) / 25));
+            const actualScore = isCorrect ? 1 : 0;
+            
+            let newElo = oldElo + K * (actualScore - expectedScore);
+            newElo = Math.max(1, Math.min(100, newElo)); // จำกัดช่วงไว้ที่ 1 - 100
+
+            const diffChange = Math.round(newElo) - Math.round(oldElo);
+            const changeText = diffChange >= 0 ? `+${diffChange}` : `${diffChange}`;
+
+            // อัปเดตสถิติ
+            userData.elo = newElo;
+            userData.totalAnswered = (userData.totalAnswered || 0) + 1;
+            if (isCorrect) userData.correctCount = (userData.correctCount || 0) + 1;
+
+            // แสดงสีปุ่มและข้อความแจ้งผล
+            const feedbackDiv = document.getElementById('q-feedback');
+            feedbackDiv.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+
+            if (isCorrect) {
+                clickedBtn.classList.replace('bg-white', 'bg-green-100');
+                clickedBtn.classList.add('border-green-500', 'font-semibold');
+                feedbackDiv.classList.add('bg-green-100', 'text-green-800');
+                feedbackDiv.innerHTML = `✅ <strong>ถูกต้อง!</strong> ระดับทักษะของคุณปรับเป็น <strong>${Math.round(newElo)}</strong> (${changeText}) — ระบบจะคัดโจทย์ที่ท้าทายขึ้นให้ในข้อถัดไป`;
+            } else {
+                clickedBtn.classList.replace('bg-white', 'bg-red-100');
+                clickedBtn.classList.add('border-red-500');
+                feedbackDiv.classList.add('bg-red-100', 'text-red-800');
+                feedbackDiv.innerHTML = `❌ <strong>ยังไม่ถูกต้อง</strong> (คำตอบที่ถูกคือ: <u>${activeQuestion.correctText}</u>)<br>ระดับทักษะของคุณปรับเป็น <strong>${Math.round(newElo)}</strong> (${changeText}) — ระบบจะปรับระดับโจทย์ให้เหมาะสมขึ้น`;
+            }
+
+            // อัปเดตตัวเลขบนหน้าจอและบันทึก Firebase
+            document.getElementById('dash-elo').innerText = Math.round(newElo);
+            document.getElementById('dash-correct').innerText = userData.correctCount;
+            document.getElementById('btn-next-q').classList.remove('hidden');
+
+            await updateDoc(doc(db, "students", currentUser.uid), {
+                elo: userData.elo,
+                correctCount: userData.correctCount,
+                totalAnswered: userData.totalAnswered
+            });
+        }
+
+        // โหลดข้อมูลสำหรับหน้า Admin ครูผู้สอน
+        async function loadAdminData() {
+            const querySnapshot = await getDocs(collection(db, "students"));
+            const tbody = document.getElementById('admin-student-list');
+            tbody.innerHTML = "";
+            querySnapshot.forEach((doc) => {
+                const s = doc.data();
+                const eloVal = s.elo !== undefined ? Math.round(s.elo) : 50;
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="p-3 font-medium">${s.fname} ${s.lname}</td>
+                        <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs">${s.grade}</span></td>
+                        <td class="p-3 font-bold text-purple-700">${eloVal} / 100</td>
+                        <td class="p-3 text-green-600 font-medium">${s.correctCount || 0} / ${s.totalAnswered || 0} ข้อ</td>
+                        <td class="p-3 text-gray-500">${s.email}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        window.showSection = (sectionId) => {
+            ['auth-section', 'onboarding-section', 'dashboard-section', 'profile-section', 'admin-section'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(sectionId).classList.remove('hidden');
+            if (sectionId === 'admin-section') loadAdminData(); // รีเฟรชข้อมูลล่าสุดทุกครั้งที่เปิดหน้า Admin
+        };
+
+        window.switchTab = (tab) => {
+            if (tab === 'lessons') {
+                document.getElementById('content-lessons').classList.remove('hidden');
+                document.getElementById('content-quizzes').classList.add('hidden');
+                document.getElementById('tab-lessons').className = "bg-blue-800 text-white px-4 py-2 rounded-lg text-sm font-medium";
+                document.getElementById('tab-quizzes').className = "bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium";
+            } else {
+                document.getElementById('content-lessons').classList.add('hidden');
+                document.getElementById('content-quizzes').classList.remove('hidden');
+                document.getElementById('tab-quizzes').className = "bg-blue-800 text-white px-4 py-2 rounded-lg text-sm font-medium";
+                document.getElementById('tab-lessons').className = "bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium";
+            }
+        };
+    </script>
+</body>
+</html>
